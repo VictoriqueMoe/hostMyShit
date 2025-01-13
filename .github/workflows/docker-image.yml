@@ -41,7 +41,7 @@ jobs:
      - name: Build and push Docker image
        with:
           context: .
-          #file: ./Dockerfile.
+          file: ./Dockerfile.
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
