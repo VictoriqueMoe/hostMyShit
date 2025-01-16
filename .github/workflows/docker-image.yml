@@ -12,9 +12,9 @@ jobs:
 
     runs-on: ubuntu-latest
     environment: production
-    tags: |
+    #tags: |
       # set latest tag for master branch
-      type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+    #  type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
     steps:
      -
         name: Checkout
