@@ -1,5 +1,6 @@
 services:
   waifuvault:
+    #This needs to be changed to whatever your dockerhub username and repo are.
     image: simonmcnair/waifuvault:main
 
     environment:
