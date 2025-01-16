@@ -1,4 +1,11 @@
 name: Docker Image CI
+# you need to create an account with docker and then create an application token at https://app.docker.com/settings/personal-access-tokens
+#you need to create and populate:
+#DOCKER_USERNAME
+#DOCKER_TOKEN
+#DOCKER_REPO_NAME (it isn't a secret but it's just easier to do it this way atm (POC))
+#in Repositoy secrets at https://github.com/waifuvault/WaifuVault/settings/secrets/actions
+
 
 on:
     # run every day at midnight
