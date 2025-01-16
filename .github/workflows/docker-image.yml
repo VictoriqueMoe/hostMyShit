@@ -1,10 +1,14 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    # run every day at midnight
+    schedule:
+        - cron: '0 0 * * *'
+    # Run on every push
+    push:
+        branches: main
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
 
 jobs:
 
