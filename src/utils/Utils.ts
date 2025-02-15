@@ -4,7 +4,7 @@ import TimeUnit from "../model/constants/TimeUnit.js";
 import process from "node:process";
 import type { Request } from "express";
 import fs from "node:fs/promises";
-import type { PlatformMulterFile } from "@tsed/common";
+import type { PlatformContext, PlatformMulterFile } from "@tsed/common";
 import { FileUploadModel } from "../model/db/FileUpload.model.js";
 import { isFormatSupportedByFfmpeg } from "./ffmpgWrapper.js";
 import { WorkerResponse } from "./typeings.js";
@@ -12,6 +12,8 @@ import { Worker } from "node:worker_threads";
 import * as crypto from "node:crypto";
 import { constant } from "@tsed/di";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
+import { BadRequest } from "@tsed/exceptions";
+import { InjectContext } from "@tsed/di";
 
 export class ObjectUtils {
     public static getNumber(source: string): number {
@@ -232,14 +234,35 @@ export class NetworkUtils {
 }
 
 export class WorkerUtils {
+    @InjectContext()
+    protected static $ctx?: PlatformContext;
+
+    public static workerMap = new Map<string, number>();
+    public static limitMap = new Map<string, number>();
+
     public static newWorker<T = void>(file: string | URL, data: Record<string, unknown>): [Promise<T>, Worker] {
         if (typeof file === "string") {
             // if string, the file ust be relative to the `workers` folder
             file = new URL(`../workers/${file}`, import.meta.url);
         }
+
+        const limitKey = file.pathname.substring(file.pathname.lastIndexOf("/") + 1);
+
+        const ip = NetworkUtils.getIp(this.$ctx?.request.request) + ":" + limitKey;
+        let processCount = this.workerMap.get(ip) ?? 0;
+        const limit = this.limitMap.get(limitKey);
+        if (limit) {
+            if (processCount >= limit) {
+                throw new BadRequest("Too many processes");
+            }
+        }
+
         const worker = new Worker(file, {
             workerData: data,
         });
+
+        processCount++;
+        this.workerMap.set(ip, processCount);
 
         const p: Promise<T> = new Promise((resolve, reject): void => {
             worker.on("message", (message: WorkerResponse<T>) => {
@@ -253,6 +276,15 @@ export class WorkerUtils {
             worker.on("exit", code => {
                 if (code !== 0) {
                     reject(new Error(`Worker stopped with exit code ${code}`));
+                }
+                if (limit) {
+                    processCount = this.workerMap.get(ip) ?? 0;
+                    processCount--;
+                    if (processCount <= 0) {
+                        this.workerMap.delete(ip);
+                    } else {
+                        this.workerMap.set(ip, processCount);
+                    }
                 }
             });
         });

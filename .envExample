@@ -5,3 +5,4 @@ SESSION_KEY=YourSessionKey
 NODE_ENV=development
 BASE_URL=http://localhost:8081
 FILE_SIZE_UPLOAD_LIMIT_MB=512
+PROCESS_LIMITS=zipFiles.js:2,generateThumbnails.js:10

@@ -1,7 +1,7 @@
-import { constant, Constant, Inject, Service } from "@tsed/di";
+import { constant, Constant, Inject, InjectContext, Service } from "@tsed/di";
 import { AlbumRepo } from "../db/repo/AlbumRepo.js";
 import { BucketRepo } from "../db/repo/BucketRepo.js";
-import { BadRequest, NotFound } from "@tsed/exceptions";
+import { BadRequest, InternalServerError, NotFound } from "@tsed/exceptions";
 import { AlbumModel } from "../model/db/Album.model.js";
 import { Builder } from "builder-pattern";
 import crypto from "node:crypto";
@@ -14,9 +14,13 @@ import fs, { ReadStream } from "node:fs";
 import GlobalEnv from "../model/constants/GlobalEnv.js";
 import { MimeService } from "./MimeService.js";
 import { Logger } from "@tsed/logger";
+import type { PlatformContext } from "@tsed/common";
 
 @Service()
 export class AlbumService {
+    @InjectContext()
+    protected $ctx?: PlatformContext;
+
     public constructor(
         @Inject() private albumRepo: AlbumRepo,
         @Inject() private bucketRepo: BucketRepo,
@@ -248,6 +252,11 @@ export class AlbumService {
         const album = await this.albumRepo.getAlbum(publicAlbumToken);
         if (!album) {
             throw new NotFound("Album not found");
+        }
+
+        if (!this.$ctx) {
+            this.logger.error("Unable to create bucket because the current platform context is undefined");
+            throw new InternalServerError("Unable to download zip");
         }
 
         const files = album.files ?? [];
