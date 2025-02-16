@@ -20,7 +20,11 @@ services:
       - http_proxy
       - https_proxy
       - no_proxy
-
+      - db_connstring=redis://redis:6379
+      - db_user=dbuser
+      - db_password=dbpasswd
+      - configfile=/waifuvault/config.ts
+      - filefolder=/waifuvault/data/
     restart: always
     ports:
       - "8081:8081"
