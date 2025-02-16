@@ -1,0 +1,59 @@
+name: Docker Image CI
+# you need to create an account with docker and then create an application token at https://app.docker.com/settings/personal-access-tokens
+#you need to create and populate:
+#DOCKER_USERNAME
+#DOCKER_TOKEN
+#DOCKER_REPO_NAME (it isn't a secret but it's just easier to do it this way atm (POC))
+#in Repositoy secrets at https://github.com/waifuvault/WaifuVault/settings/secrets/actions
+
+
+on:
+    # run every day at midnight
+    schedule:
+        - cron: '0 0 * * *'
+    # Run on every push
+    push:
+        branches: main
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    environment: production
+    #tags: |
+      # set latest tag for master branch
+    #  type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+    steps:
+     -
+        name: Checkout
+        uses: actions/checkout@v2
+     -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+     -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+     -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+         
+     - name: Extract metadata (tags, labels) for Docker
+       id: meta
+       uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+       with:
+          images: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_REPO_NAME }}
+      
+     - name: Build and push Docker image
+       uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+       with:
+          context: .
+          #file: ./Dockerfile.
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
