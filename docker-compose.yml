@@ -15,7 +15,8 @@ services:
 
     #This needs to be changed to whatever your dockerhub username and repo are.
     image: simonmcnair/waifuvault:main
-
+    depends_on: 
+      - redis
     environment:
       - http_proxy
       - https_proxy
