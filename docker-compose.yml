@@ -1,5 +1,18 @@
 services:
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    networks:
+      default:
+        aliases:
+          - redis
+    ports:
+      - "6379:6379"
+
   waifuvault:
+    container_name: waifuvault_server
+
     #This needs to be changed to whatever your dockerhub username and repo are.
     image: simonmcnair/waifuvault:main
 
