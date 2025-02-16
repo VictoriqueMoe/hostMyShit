@@ -26,6 +26,14 @@ services:
       - db_password=dbpasswd
       - configfile=/waifuvault/config.ts
       - filefolder=/waifuvault/data/
+      - PORT=localhost:8081
+      - HTTPS=false
+      - HTTPS_PORT=4000
+      - SESSION_KEY=YourSessionKey
+      - NODE_ENV=development
+      - BASE_URL=http://localhost:8081
+      - FILE_SIZE_UPLOAD_LIMIT_MB=512
+
     restart: always
     ports:
       - "8081:8081"
